@@ -236,6 +236,32 @@ LOBECHAT_MANIFEST = {
 }
 
 
+@routes.get("/.well-known/mcp/server-card.json")
+async def api_server_card(request):
+    card = {
+        "serverInfo": {"name": "AgentNet", "version": "1.0.0"},
+        "tools": [
+            {"name": "find_agents", "description": "Search for AI agents by capability, category, or keyword",
+             "inputSchema": {"type": "object", "properties": {"query": {"type": "string", "description": "Search query"}, "category": {"type": "string", "description": "Filter by category"}, "limit": {"type": "integer", "description": "Max results", "default": 10}}}},
+            {"name": "register_agent", "description": "Register a new AI agent in the network",
+             "inputSchema": {"type": "object", "properties": {"name": {"type": "string"}, "description": {"type": "string"}, "endpoint": {"type": "string"}, "capabilities": {"type": "array", "items": {"type": "string"}}}, "required": ["name", "description"]}},
+            {"name": "recommend", "description": "Get agent recommendations based on a need",
+             "inputSchema": {"type": "object", "properties": {"need": {"type": "string"}}, "required": ["need"]}},
+            {"name": "report_referral", "description": "Report that you referred a user to another agent",
+             "inputSchema": {"type": "object", "properties": {"from_agent": {"type": "string"}, "to_agent": {"type": "string"}, "context": {"type": "string"}}, "required": ["from_agent", "to_agent"]}},
+            {"name": "confirm_referral", "description": "Confirm a referral was received and useful",
+             "inputSchema": {"type": "object", "properties": {"referral_id": {"type": "string"}}, "required": ["referral_id"]}},
+            {"name": "my_stats", "description": "Get statistics for a specific agent",
+             "inputSchema": {"type": "object", "properties": {"agent_name": {"type": "string"}}, "required": ["agent_name"]}},
+            {"name": "network_stats", "description": "Get overall network statistics",
+             "inputSchema": {"type": "object", "properties": {}}}
+        ],
+        "resources": [],
+        "prompts": []
+    }
+    return web.json_response(card, headers={"Access-Control-Allow-Origin": "*"})
+
+
 @routes.get("/manifest.json")
 async def api_manifest(request):
     return web.json_response(LOBECHAT_MANIFEST, headers={
