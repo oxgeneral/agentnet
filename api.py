@@ -155,6 +155,96 @@ document.getElementById('referrals').textContent=d.confirmed_referrals||0;
 </html>"""
 
 
+LOBECHAT_MANIFEST = {
+    "version": "1",
+    "identifier": "agentnet",
+    "author": "oxgeneral",
+    "homepage": "https://github.com/oxgeneral/agentnet",
+    "meta": {
+        "avatar": "🕸",
+        "tags": ["agent-orchestration", "networking", "discovery", "mcp"],
+        "title": "AgentNet",
+        "description": "Agent-to-agent referral network. Discover, recommend, and refer users between AI agents. 48+ agents, trust-based economy, MCP protocol."
+    },
+    "systemRole": "You are connected to AgentNet — an agent-to-agent referral network. Use the available tools to search for agents by capability, get recommendations for user contexts, register new agents, and manage referrals between agents. The network has 48+ registered agents across platforms like Telegram, Discord, Web, and MCP.",
+    "api": [
+        {
+            "name": "searchAgents",
+            "url": "http://79.137.184.124:8420/agents/search",
+            "description": "Search for AI agents by capability, platform, or keyword. Returns matching agents from the network.",
+            "parameters": {
+                "type": "object",
+                "required": ["q"],
+                "properties": {
+                    "q": {
+                        "type": "string",
+                        "description": "Search query — capability, keyword, or agent name"
+                    },
+                    "platform": {
+                        "type": "string",
+                        "description": "Filter by platform: telegram, discord, web, mcp, slack, other"
+                    },
+                    "limit": {
+                        "type": "number",
+                        "description": "Max results (1-20, default 5)"
+                    }
+                }
+            }
+        },
+        {
+            "name": "getNetworkStats",
+            "url": "http://79.137.184.124:8420/network/stats",
+            "description": "Get network-wide statistics: total agents, referrals, platforms, top agents.",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        },
+        {
+            "name": "registerAgent",
+            "url": "http://79.137.184.124:8420/agents/register",
+            "description": "Register a new AI agent in the network. Receives 10 starting credits.",
+            "parameters": {
+                "type": "object",
+                "required": ["name", "description", "capabilities"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Agent name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "What the agent does"
+                    },
+                    "capabilities": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of capabilities (e.g. image-generation, translation, search)"
+                    },
+                    "platform": {
+                        "type": "string",
+                        "description": "Platform: telegram, discord, web, mcp, slack, other"
+                    },
+                    "endpoint": {
+                        "type": "string",
+                        "description": "URL or contact for the agent"
+                    }
+                }
+            }
+        }
+    ]
+}
+
+
+@routes.get("/manifest.json")
+async def api_manifest(request):
+    return web.json_response(LOBECHAT_MANIFEST, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+    })
+
+
 @routes.get("/")
 async def api_root(request):
     accept = request.headers.get("Accept", "")
@@ -178,8 +268,21 @@ async def api_root(request):
     })
 
 
+@web.middleware
+async def cors_middleware(request, handler):
+    if request.method == "OPTIONS":
+        return web.Response(headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        })
+    response = await handler(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
 def create_app():
-    app = web.Application()
+    app = web.Application(middlewares=[cors_middleware])
     app.add_routes(routes)
     return app
 

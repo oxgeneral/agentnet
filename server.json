@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.oxgeneral/agentnet",
+  "title": "AgentNet",
+  "description": "Agent-to-agent referral network. Discover, recommend, and refer users between AI agents via MCP.",
+  "repository": {
+    "url": "https://github.com/oxgeneral/agentnet",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://79.137.184.124.nip.io:8421/mcp"
+    }
+  ]
+}
